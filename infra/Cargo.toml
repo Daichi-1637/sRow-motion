@@ -3,7 +3,7 @@ name = "infra"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-authors = ["SrowMotion Contributors"]
+authors = ["sRow motion Contributors"]
 
 [dependencies]
 shared = { workspace = true }

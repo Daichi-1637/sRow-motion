@@ -1,11 +1,11 @@
-# SrowMotion
+# sRow motion
 
 A Rust application that safely moves all files and directories from a source directory to a destination directory with data integrity guarantees.
 
 
 ## Overview
 
-SrowMotion is a command-line tool designed to move all contents from a specified source directory to a destination directory. The application is designed to be used with system schedulers such as cron or Task Scheduler.  
+sRow motion is a command-line tool designed to move all contents from a specified source directory to a destination directory. The application is designed to be used with system schedulers such as cron or Task Scheduler.  
 The application includes following features:
 
 - **Scheduled execution**: Only runs on specified weekdays
@@ -18,7 +18,7 @@ The application includes following features:
 The project follows Clean Architecture principles with the following structure:
 
 ```
-SrowMotion/
+sRow-motion/
 ├── adapter/          # Interface adapters that mediate between domain and infra
 ├── domain/           # Business logic and core entities
 ├── infra/            # Infrastructure concerns (file system operations)
@@ -38,7 +38,7 @@ SrowMotion/
 
 ```bash
 git clone <repository-url>
-cd SrowMotion
+cd sRow-motion
 cargo build --release
 ```
 
