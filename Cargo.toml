@@ -1,0 +1,24 @@
+[package]
+name = "srow"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["SrowMotion Contributors"]
+description = "A Rust application that safely moves files between directories with data integrity guarantees"
+keywords = ["file-transfer", "scheduler", "data-integrity"]
+categories = ["command-line-utilities", "filesystem"]
+
+[workspace]
+members = ["adapter", "domain", "infra", "shared"]
+
+[workspace.dependencies]
+shared = { path = "./shared" }
+tempfile = "3.8"
+
+[dependencies]
+shared = { workspace = true }
+domain = { path =  "./domain" }
+clap = { version = "4.4", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = { workspace = true }

@@ -1,0 +1,27 @@
+# Rust関連
+/target
+**/*.rs.bk
+*.pdb
+
+# Cargo関連
+Cargo.lock
+!Cargo.lock
+
+# IDE・エディタ関連
+/.cursor
+.vscode/
+.idea/
+
+# OS関連
+.DS_Store
+
+# ログファイル
+*.log
+logs/
+
+# 環境変数ファイル
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

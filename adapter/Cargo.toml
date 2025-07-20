@@ -1,0 +1,13 @@
+[package]
+name = "adapter"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["SrowMotion Contributors"]
+
+[dependencies]
+shared = { workspace = true }
+infra = { path = "../infra" }
+
+[dev-dependencies]
+tempfile = { workspace = true }
