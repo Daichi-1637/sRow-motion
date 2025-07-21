@@ -16,7 +16,10 @@ impl DirectoryDataTransferService {
 
     #[cfg(test)]
     pub fn with_custom_now(self, now: DateTime<Local>) -> Self {
-        Self { config: self.config, now }
+        Self {
+            config: self.config,
+            now,
+        }
     }
 
     pub fn validate(self) -> AppResult<Self> {
@@ -55,7 +58,7 @@ impl DirectoryDataTransferService {
                 false => Err(AppError::Io(std::io::Error::new(
                     std::io::ErrorKind::Other,
                     "整合性エラー：コピー内容が一致しません。移動先を削除します。",
-                )))
+                ))),
             }
         };
 
@@ -195,7 +198,13 @@ mod tests {
         let service = DirectoryDataTransferService::new(config).with_custom_now(now);
 
         // 移動先ディレクトリに異なるファイルを作成（整合性エラーを引き起こす）
-        let dest_file = service.config.dest_directory_path.join("different.txt").to_str().unwrap().replace("\\", "/");
+        let dest_file = service
+            .config
+            .dest_directory_path
+            .join("different.txt")
+            .to_str()
+            .unwrap()
+            .replace("\\", "/");
         let dest_file = Path::new(&dest_file);
         println!("移動先ディレクトリ: {:?}", dest_file.to_str());
         fs::write(&dest_file, "different content").unwrap();

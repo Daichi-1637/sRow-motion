@@ -1,8 +1,11 @@
-use adapter::file_path::writable_file_path::WritableFilePath;
 use crate::{
-    config::{Config, destination_directory_path::DestinationDirectoryPath, source_directory_path::SourceDirectoryPath, weekday::WeekDay},
+    config::{
+        destination_directory_path::DestinationDirectoryPath,
+        source_directory_path::SourceDirectoryPath, weekday::WeekDay, Config,
+    },
     config_builder::ConfigBuilder,
 };
+use adapter::file_path::writable_file_path::WritableFilePath;
 use serde::Deserialize;
 use shared::error::{AppError, AppResult};
 
@@ -32,7 +35,9 @@ impl ConfigBuilder for JsonConfigBuilder {
 
         Ok(Config {
             source_directory_path: SourceDirectoryPath::new(config_json.source_directory_path)?,
-            dest_directory_path: DestinationDirectoryPath::new(config_json.destination_directory_path)?,
+            dest_directory_path: DestinationDirectoryPath::new(
+                config_json.destination_directory_path,
+            )?,
             weekday: WeekDay::try_from(config_json.weekday)?,
         })
     }
@@ -95,9 +100,14 @@ mod tests {
     fn json_config_builder_builds_config_from_valid_json() {
         // ===== Arrange =====
         let (source_dir, dest_dir) = create_temp_directories();
-        // TODO: multi platform 
+        // TODO: multi platform
         let source_path = source_dir.path().to_str().unwrap().replace("\\", "/");
-        let dest_path = dest_dir.path().join("hoge").to_str().unwrap().replace("\\", "/");
+        let dest_path = dest_dir
+            .path()
+            .join("hoge")
+            .to_str()
+            .unwrap()
+            .replace("\\", "/");
 
         let json_content = format!(
             r#"{{
@@ -107,10 +117,10 @@ mod tests {
             }}"#,
             source_path, dest_path
         );
-        
+
         let temp_file = create_temp_config_file(&json_content);
         let config_path = temp_file.path().to_str().unwrap();
-        
+
         let builder = JsonConfigBuilder::new(config_path).unwrap();
 
         // ===== Act =====
@@ -129,7 +139,7 @@ mod tests {
         // ===== Arrange =====
         let (source_dir, _) = create_temp_directories();
         let source_path = source_dir.path().to_str().unwrap().replace("\\", "/");
-        
+
         let json_content = format!(
             r#"{{
                 "source_directory_path": "{}"
@@ -147,4 +157,3 @@ mod tests {
         assert!(result.is_err());
     }
 }
-

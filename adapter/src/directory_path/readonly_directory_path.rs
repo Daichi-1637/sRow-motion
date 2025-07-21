@@ -1,6 +1,6 @@
-use std::path::{Path, PathBuf};
 use infra::file_system::FileSystem;
 use shared::error::{AppError, AppResult};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ReadonlyDirectoryPath(PathBuf);
@@ -12,14 +12,17 @@ impl ReadonlyDirectoryPath {
         if !path.is_dir() {
             return Err(AppError::Io(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
-                format!("ディレクトリ '{}' は存在しません", path.display())
+                format!("ディレクトリ '{}' は存在しません", path.display()),
             )));
         }
 
         if !FileSystem::is_path_readonly(&path)? {
             return Err(AppError::Io(std::io::Error::new(
                 std::io::ErrorKind::PermissionDenied,
-                format!("ディレクトリ '{}' に読み取り専用の権限がありません", path.display())
+                format!(
+                    "ディレクトリ '{}' に読み取り専用の権限がありません",
+                    path.display()
+                ),
             )));
         }
 
@@ -78,7 +81,7 @@ mod tests {
         // ===== Arrange =====
         let temp_dir = tempfile::tempdir().unwrap();
         let path = temp_dir.path().to_path_buf();
-        
+
         // Set read-only permission for the directory
         let mut perms = std::fs::metadata(&path).unwrap().permissions();
         perms.set_readonly(true);
@@ -86,7 +89,7 @@ mod tests {
 
         // ===== Act =====
         let source_dir = ReadonlyDirectoryPath::new(path.clone()).unwrap();
-        
+
         // ===== Assert =====
         assert_eq!(source_dir.to_str().unwrap(), path.to_str().unwrap());
     }
@@ -95,10 +98,10 @@ mod tests {
     fn fails_creating_readonly_dir_from_nonexistent_path() {
         // ===== Arrange =====
         let invalid_path = PathBuf::from("/path/does/not/exist");
-        
+
         // ===== Act =====
         let result = ReadonlyDirectoryPath::new(invalid_path);
-        
+
         // ===== Assert =====
         assert!(result.is_err());
     }
@@ -108,10 +111,10 @@ mod tests {
         // ===== Arrange =====
         let temp_dir = tempfile::tempdir().unwrap();
         let path = temp_dir.path().to_path_buf();
-        
+
         // ===== Act =====
         let result = ReadonlyDirectoryPath::new(path.clone());
-        
+
         // ===== Assert =====
         assert!(result.is_err());
     }
@@ -122,16 +125,16 @@ mod tests {
         let temp_dir = tempfile::tempdir().unwrap();
         let test_dir = temp_dir.path().join("test_dir");
         std::fs::create_dir(&test_dir).unwrap();
-        
+
         // テストファイルを作成
         let test_file = test_dir.join("test.txt");
         std::fs::write(&test_file, "test content").unwrap();
-        
+
         // ディレクトリを読み取り専用に設定
         let mut perms = std::fs::metadata(&test_dir).unwrap().permissions();
         perms.set_readonly(true);
         std::fs::set_permissions(&test_dir, perms).unwrap();
-        
+
         let readonly_dir = ReadonlyDirectoryPath::new(test_dir.to_path_buf()).unwrap();
 
         // ===== Act =====

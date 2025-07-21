@@ -10,7 +10,7 @@ impl SourceDirectoryPath {
     }
 }
 
-impl std::ops::Deref for SourceDirectoryPath{
+impl std::ops::Deref for SourceDirectoryPath {
     type Target = ReadonlyDirectoryPath;
 
     fn deref(&self) -> &Self::Target {

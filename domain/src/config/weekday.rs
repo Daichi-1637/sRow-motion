@@ -1,6 +1,6 @@
-use shared::error::AppError;
-use chrono::{DateTime, Local};
 use chrono::Datelike;
+use chrono::{DateTime, Local};
+use shared::error::AppError;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WeekDay {
@@ -33,7 +33,7 @@ impl TryFrom<String> for WeekDay {
             "Sun" => Ok(WeekDay::Sunday),
             _ => Err(AppError::Io(std::io::Error::new(
                 std::io::ErrorKind::InvalidInput,
-                "無効な曜日が指定されています"
+                "無効な曜日が指定されています",
             ))),
         }
     }

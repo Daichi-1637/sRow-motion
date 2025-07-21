@@ -1,5 +1,5 @@
-use std::{fs, path::PathBuf};
 use shared::error::{AppError, AppResult};
+use std::{fs, path::PathBuf};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct WritableFilePath(PathBuf);
@@ -11,7 +11,7 @@ impl WritableFilePath {
         if !path.is_file() {
             return Err(AppError::Io(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
-                format!("ファイル '{}' は存在しません", path.display())
+                format!("ファイル '{}' は存在しません", path.display()),
             )));
         }
 
@@ -19,7 +19,7 @@ impl WritableFilePath {
         if metadata.permissions().readonly() {
             return Err(AppError::Io(std::io::Error::new(
                 std::io::ErrorKind::PermissionDenied,
-                format!("ファイル '{}' に書き込み権限がありません", path.display())
+                format!("ファイル '{}' に書き込み権限がありません", path.display()),
             )));
         }
 
@@ -28,7 +28,7 @@ impl WritableFilePath {
 
     pub fn read_content(&self) -> AppResult<String> {
         std::fs::read_to_string(&self.0).map_err(AppError::Io)
-    } 
+    }
 }
 
 impl TryFrom<String> for WritableFilePath {
@@ -96,7 +96,7 @@ mod tests {
         // ===== Arrange =====
         let temp_file = create_temp_file("test content");
         let path = temp_file.path().to_path_buf();
-        
+
         // ファイルを読み取り専用に設定
         let mut perms = std::fs::metadata(&path).unwrap().permissions();
         perms.set_readonly(true);

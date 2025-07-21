@@ -1,5 +1,5 @@
-use chrono::{Datelike, DateTime, Local};
 use adapter::directory_path::virtual_directory_path::VirtualDirectoryPath;
+use chrono::{DateTime, Datelike, Local};
 use shared::error::{AppError, AppResult};
 
 trait PadLeft {
@@ -29,7 +29,9 @@ impl PathTemplateRenderer {
     }
 
     pub fn render(&self, date: &DateTime<Local>) -> AppResult<VirtualDirectoryPath> {
-        let rendered_template = self.template.to_str()?
+        let rendered_template = self
+            .template
+            .to_str()?
             .replace("{yyyy}", &date.year().to_string())
             .replace("{mm}", &date.month().pad_left(2, '0'))
             .replace("{dd}", &date.day().pad_left(2, '0'));
@@ -37,10 +39,13 @@ impl PathTemplateRenderer {
         if rendered_template.contains("{") || rendered_template.contains("}") {
             return Err(AppError::Io(std::io::Error::new(
                 std::io::ErrorKind::InvalidInput,
-                format!("想定されていない文字列が括弧で囲われています: {}", rendered_template),
+                format!(
+                    "想定されていない文字列が括弧で囲われています: {}",
+                    rendered_template
+                ),
             )));
         }
-        
+
         VirtualDirectoryPath::new(rendered_template)
     }
 }
@@ -83,5 +88,5 @@ mod tests {
 
         // ===== Assert =====
         assert!(result.is_ok());
-    }   
+    }
 }

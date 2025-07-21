@@ -1,5 +1,7 @@
+use adapter::directory_path::{
+    virtual_directory_path::VirtualDirectoryPath, writable_directory_path::WritableDirectoryPath,
+};
 use chrono::Local;
-use adapter::directory_path::{virtual_directory_path::VirtualDirectoryPath, writable_directory_path::WritableDirectoryPath};
 use shared::error::AppResult;
 
 use crate::config::destination_directory_path::path_template_renderer::PathTemplateRenderer;
@@ -10,7 +12,7 @@ pub struct DestinationDirectoryPath(WritableDirectoryPath);
 
 impl DestinationDirectoryPath {
     pub fn new(path: String) -> AppResult<Self> {
-        let template= VirtualDirectoryPath::new(path)?;
+        let template = VirtualDirectoryPath::new(path)?;
         let writable_dir = PathTemplateRenderer::new(template)
             .render(&Local::now())?
             .create_writable_directory_path()?;

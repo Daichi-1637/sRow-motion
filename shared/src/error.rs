@@ -39,4 +39,4 @@ impl std::fmt::Display for AppError {
 
 impl std::error::Error for AppError {}
 
-pub type AppResult<T> = Result<T, AppError>; 
+pub type AppResult<T> = Result<T, AppError>;

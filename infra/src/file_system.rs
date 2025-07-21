@@ -1,4 +1,8 @@
-use std::{fs::{self, File}, io::Read, path::Path};
+use std::{
+    fs::{self, File},
+    io::Read,
+    path::Path,
+};
 
 use sha2::{Digest, Sha256};
 use shared::error::{AppError, AppResult};
@@ -6,7 +10,10 @@ use shared::error::{AppError, AppResult};
 pub struct FileSystem;
 
 impl FileSystem {
-    pub fn copy_all_data_under_the_directory_with_hash_verification(from: &Path, to: &Path) -> AppResult<()> {
+    pub fn copy_all_data_under_the_directory_with_hash_verification(
+        from: &Path,
+        to: &Path,
+    ) -> AppResult<()> {
         Self::copy_directory_recursively(from, to)
     }
 
@@ -16,7 +23,7 @@ impl FileSystem {
             let entry_path = entry.path();
             let rel_path = entry_path.strip_prefix(from)?;
             let dest_path = to.join(rel_path);
-            
+
             if entry.file_type()?.is_dir() {
                 fs::create_dir_all(&dest_path)?;
                 Self::copy_directory_recursively(&entry_path, &dest_path)?;
@@ -28,7 +35,10 @@ impl FileSystem {
                 if entry_hash != dest_hash {
                     return Err(AppError::Io(std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
-                        format!("ハッシュ値が一致しません。: {} -> {}", entry_hash, dest_hash)
+                        format!(
+                            "ハッシュ値が一致しません。: {} -> {}",
+                            entry_hash, dest_hash
+                        ),
                     )));
                 }
             }
@@ -48,7 +58,7 @@ impl FileSystem {
             }
             hasher.update(&buffer[..n]);
         }
-        
+
         Ok(format!("{:x}", hasher.finalize()))
     }
 
@@ -98,7 +108,6 @@ impl FileSystem {
         }
         Ok(())
     }
-
 }
 
 #[cfg(test)]
@@ -109,29 +118,42 @@ mod tests {
     use tempfile::TempDir;
 
     #[test]
-    fn copy_all_data_under_the_directory_with_hash_verification_successfully_copies_files_and_directories() {
+    fn copy_all_data_under_the_directory_with_hash_verification_successfully_copies_files_and_directories(
+    ) {
         // ===== Arrange =====
         let temp_dir = TempDir::new().unwrap();
         let source_dir = temp_dir.path().join("source");
         let dest_dir = temp_dir.path().join("dest");
-        
+
         fs::create_dir(&source_dir).unwrap();
         fs::create_dir(&dest_dir).unwrap();
-        
+
         // Create test files
         let test_file1 = source_dir.join("file1.txt");
         let test_file2 = source_dir.join("file2.txt");
         let test_subdir = source_dir.join("subdir");
         let test_file3 = test_subdir.join("file3.txt");
-        
+
         fs::create_dir(&test_subdir).unwrap();
-        
-        File::create(&test_file1).unwrap().write_all(b"content1").unwrap();
-        File::create(&test_file2).unwrap().write_all(b"content2").unwrap();
-        File::create(&test_file3).unwrap().write_all(b"content3").unwrap();
+
+        File::create(&test_file1)
+            .unwrap()
+            .write_all(b"content1")
+            .unwrap();
+        File::create(&test_file2)
+            .unwrap()
+            .write_all(b"content2")
+            .unwrap();
+        File::create(&test_file3)
+            .unwrap()
+            .write_all(b"content3")
+            .unwrap();
 
         // ===== Act =====
-        let result = FileSystem::copy_all_data_under_the_directory_with_hash_verification(&source_dir, &dest_dir);
+        let result = FileSystem::copy_all_data_under_the_directory_with_hash_verification(
+            &source_dir,
+            &dest_dir,
+        );
 
         // ===== Assert =====
         assert!(result.is_ok());
@@ -142,16 +164,20 @@ mod tests {
     }
 
     #[test]
-    fn copy_all_data_under_the_directory_with_hash_verification_returns_error_when_source_directory_does_not_exist() {
+    fn copy_all_data_under_the_directory_with_hash_verification_returns_error_when_source_directory_does_not_exist(
+    ) {
         // ===== Arrange =====
         let temp_dir = TempDir::new().unwrap();
         let non_existent_source = temp_dir.path().join("non_existent");
         let dest_dir = temp_dir.path().join("dest");
-        
+
         fs::create_dir(&dest_dir).unwrap();
 
         // ===== Act =====
-        let result = FileSystem::copy_all_data_under_the_directory_with_hash_verification(&non_existent_source, &dest_dir);
+        let result = FileSystem::copy_all_data_under_the_directory_with_hash_verification(
+            &non_existent_source,
+            &dest_dir,
+        );
 
         // ===== Assert =====
         assert!(result.is_err());
@@ -163,7 +189,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let test_file = temp_dir.path().join("readonly.txt");
         File::create(&test_file).unwrap();
-        
+
         let mut perms = fs::metadata(&test_file).unwrap().permissions();
         perms.set_readonly(true);
         fs::set_permissions(&test_file, perms).unwrap();
@@ -212,7 +238,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let non_empty_dir = temp_dir.path().join("non_empty");
         fs::create_dir(&non_empty_dir).unwrap();
-        
+
         File::create(non_empty_dir.join("file.txt")).unwrap();
 
         // ===== Act =====
@@ -229,19 +255,31 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let dir1 = temp_dir.path().join("dir1");
         let dir2 = temp_dir.path().join("dir2");
-        
+
         fs::create_dir(&dir1).unwrap();
         fs::create_dir(&dir2).unwrap();
-        
+
         // Create identical structure
         fs::create_dir(dir1.join("subdir")).unwrap();
         fs::create_dir(dir2.join("subdir")).unwrap();
-        
-        File::create(dir1.join("file1.txt")).unwrap().write_all(b"content").unwrap();
-        File::create(dir2.join("file1.txt")).unwrap().write_all(b"content").unwrap();
-        
-        File::create(dir1.join("subdir").join("file2.txt")).unwrap().write_all(b"content").unwrap();
-        File::create(dir2.join("subdir").join("file2.txt")).unwrap().write_all(b"content").unwrap();
+
+        File::create(dir1.join("file1.txt"))
+            .unwrap()
+            .write_all(b"content")
+            .unwrap();
+        File::create(dir2.join("file1.txt"))
+            .unwrap()
+            .write_all(b"content")
+            .unwrap();
+
+        File::create(dir1.join("subdir").join("file2.txt"))
+            .unwrap()
+            .write_all(b"content")
+            .unwrap();
+        File::create(dir2.join("subdir").join("file2.txt"))
+            .unwrap()
+            .write_all(b"content")
+            .unwrap();
 
         // ===== Act =====
         let result = FileSystem::verify_directory_contents_match(&dir1, &dir2);
@@ -257,10 +295,10 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let dir1 = temp_dir.path().join("dir1");
         let dir2 = temp_dir.path().join("dir2");
-        
+
         fs::create_dir(&dir1).unwrap();
         fs::create_dir(&dir2).unwrap();
-        
+
         // Create different structure
         File::create(dir1.join("file1.txt")).unwrap();
         File::create(dir2.join("file2.txt")).unwrap();
@@ -278,7 +316,10 @@ mod tests {
         // ===== Arrange =====
         let temp_dir = TempDir::new().unwrap();
         let test_file = temp_dir.path().join("test.txt");
-        File::create(&test_file).unwrap().write_all(b"test content").unwrap();
+        File::create(&test_file)
+            .unwrap()
+            .write_all(b"test content")
+            .unwrap();
 
         // ===== Act =====
         let hash1 = FileSystem::calculate_hash_from_file_content(&test_file);
@@ -296,9 +337,15 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let file1 = temp_dir.path().join("file1.txt");
         let file2 = temp_dir.path().join("file2.txt");
-        
-        File::create(&file1).unwrap().write_all(b"content1").unwrap();
-        File::create(&file2).unwrap().write_all(b"content2").unwrap();
+
+        File::create(&file1)
+            .unwrap()
+            .write_all(b"content1")
+            .unwrap();
+        File::create(&file2)
+            .unwrap()
+            .write_all(b"content2")
+            .unwrap();
 
         // ===== Act =====
         let hash1 = FileSystem::calculate_hash_from_file_content(&file1);
@@ -316,17 +363,26 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let test_dir = temp_dir.path().join("test_dir");
         fs::create_dir(&test_dir).unwrap();
-        
+
         // Create files and subdirectories
         let file1 = test_dir.join("file1.txt");
         let file2 = test_dir.join("file2.txt");
         let subdir = test_dir.join("subdir");
         let subfile = subdir.join("subfile.txt");
-        
+
         fs::create_dir(&subdir).unwrap();
-        File::create(&file1).unwrap().write_all(b"content1").unwrap();
-        File::create(&file2).unwrap().write_all(b"content2").unwrap();
-        File::create(&subfile).unwrap().write_all(b"subcontent").unwrap();
+        File::create(&file1)
+            .unwrap()
+            .write_all(b"content1")
+            .unwrap();
+        File::create(&file2)
+            .unwrap()
+            .write_all(b"content2")
+            .unwrap();
+        File::create(&subfile)
+            .unwrap()
+            .write_all(b"subcontent")
+            .unwrap();
 
         // ===== Act =====
         let result = FileSystem::clear_directory_contents(&test_dir);

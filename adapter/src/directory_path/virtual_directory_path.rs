@@ -1,5 +1,5 @@
-use std::{fs, path::PathBuf};
 use shared::error::{AppError, AppResult};
+use std::{fs, path::PathBuf};
 
 use super::writable_directory_path::WritableDirectoryPath;
 
@@ -7,13 +7,13 @@ use super::writable_directory_path::WritableDirectoryPath;
 pub struct VirtualDirectoryPath(PathBuf);
 
 impl VirtualDirectoryPath {
-    pub fn new(path: impl Into<PathBuf>) -> AppResult<Self>{
+    pub fn new(path: impl Into<PathBuf>) -> AppResult<Self> {
         let path = path.into();
 
         if path.exists() {
             return Err(AppError::Io(std::io::Error::new(
                 std::io::ErrorKind::AlreadyExists,
-                "指定されたパスは既に存在します"
+                "指定されたパスは既に存在します",
             )));
         }
 
@@ -26,10 +26,12 @@ impl VirtualDirectoryPath {
     }
 
     pub fn to_str(&self) -> AppResult<&str> {
-        self.0.to_str().ok_or_else(|| AppError::Io(std::io::Error::new(
-            std::io::ErrorKind::InvalidInput,
-            "パスに無効な文字が含まれています"
-        )))
+        self.0.to_str().ok_or_else(|| {
+            AppError::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "パスに無効な文字が含まれています",
+            ))
+        })
     }
 }
 
@@ -50,7 +52,10 @@ mod tests {
         // ===== Assert =====
         assert!(result.is_ok());
         let virtual_path = result.unwrap();
-        assert_eq!(virtual_path.to_str().unwrap(), nonexistent_path.to_str().unwrap());
+        assert_eq!(
+            virtual_path.to_str().unwrap(),
+            nonexistent_path.to_str().unwrap()
+        );
     }
 
     #[test]
@@ -82,7 +87,13 @@ mod tests {
         let writable_dir = result.unwrap();
         assert!(virtual_path.exists());
         assert!(virtual_path.is_dir());
-        assert!(!fs::metadata(&virtual_path).unwrap().permissions().readonly());
-        assert_eq!(writable_dir.to_str().unwrap(), virtual_path.to_str().unwrap());
+        assert!(!fs::metadata(&virtual_path)
+            .unwrap()
+            .permissions()
+            .readonly());
+        assert_eq!(
+            writable_dir.to_str().unwrap(),
+            virtual_path.to_str().unwrap()
+        );
     }
 }
