@@ -9,7 +9,6 @@ Cargo.lock
 
 # IDE・エディタ関連
 /.cursor
-.vscode/
 .idea/
 
 # OS関連
