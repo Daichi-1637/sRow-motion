@@ -55,6 +55,7 @@ mod tests {
         temp_file
     }
 
+    #[allow(clippy::permissions_set_readonly_false)]
     fn create_temp_directories() -> (TempDir, TempDir) {
         let source_dir = TempDir::new().unwrap();
         let dest_dir = TempDir::new().unwrap();

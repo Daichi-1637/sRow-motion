@@ -158,7 +158,7 @@ mod tests {
         let test_file = service.config.dest_directory_path.join("test.txt");
         let test_file = test_file.to_str().unwrap().replace("\\", "/");
         let test_file = Path::new(&test_file);
-        fs::write(&test_file, "test content").unwrap();
+        fs::write(test_file, "test content").unwrap();
 
         // ===== Act =====
         let result = service.validate();
@@ -207,7 +207,7 @@ mod tests {
             .replace("\\", "/");
         let dest_file = Path::new(&dest_file);
         println!("移動先ディレクトリ: {:?}", dest_file.to_str());
-        fs::write(&dest_file, "different content").unwrap();
+        fs::write(dest_file, "different content").unwrap();
 
         // ===== Act =====
         let result = service.transfer();

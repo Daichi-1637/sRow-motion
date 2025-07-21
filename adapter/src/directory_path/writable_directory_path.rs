@@ -1,6 +1,6 @@
-use std::path::{Path, PathBuf};
 use infra::file_system::FileSystem;
 use shared::error::{AppError, AppResult};
+use std::path::{Path, PathBuf};
 
 use super::readonly_directory_path::ReadonlyDirectoryPath;
 
@@ -14,14 +14,17 @@ impl WritableDirectoryPath {
         if !path.is_dir() {
             return Err(AppError::Io(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
-                format!("ディレクトリ '{}' は存在しません", path.display())
+                format!("ディレクトリ '{}' は存在しません", path.display()),
             )));
         }
 
         if FileSystem::is_path_readonly(&path)? {
             return Err(AppError::Io(std::io::Error::new(
                 std::io::ErrorKind::PermissionDenied,
-                format!("ディレクトリ '{}' に書き込み権限がありません", path.display())
+                format!(
+                    "ディレクトリ '{}' に書き込み権限がありません",
+                    path.display()
+                ),
             )));
         }
 
@@ -38,7 +41,10 @@ impl WritableDirectoryPath {
     }
 
     pub fn copy_all_data_from(&self, source: &ReadonlyDirectoryPath) -> AppResult<()> {
-        FileSystem::copy_all_data_under_the_directory_with_hash_verification(&source.as_path(), &self.0)
+        FileSystem::copy_all_data_under_the_directory_with_hash_verification(
+            source.as_path(),
+            &self.0,
+        )
     }
 
     pub fn verify_directory_contents_match(&self, other: &Path) -> AppResult<bool> {
@@ -65,7 +71,6 @@ impl TryFrom<PathBuf> for WritableDirectoryPath {
         Self::new(path)
     }
 }
-
 
 impl AsRef<Path> for WritableDirectoryPath {
     fn as_ref(&self) -> &Path {
@@ -145,20 +150,21 @@ mod tests {
         let temp_dir = tempfile::tempdir().unwrap();
         let source_dir = temp_dir.path().join("source");
         let dest_dir = temp_dir.path().join("dest");
-        
+
         std::fs::create_dir(&source_dir).unwrap();
         std::fs::create_dir(&dest_dir).unwrap();
-        
+
         // ソースディレクトリにファイルを作成
         let test_file = source_dir.join("test.txt");
         std::fs::write(&test_file, "test content").unwrap();
-        
+
         // ソースディレクトリを読み取り専用に設定
         let mut perms = std::fs::metadata(&source_dir).unwrap().permissions();
         perms.set_readonly(true);
         std::fs::set_permissions(&source_dir, perms).unwrap();
-        
-        let readonly_source = ReadonlyDirectoryPath::new(source_dir.to_string_lossy().to_string()).unwrap();
+
+        let readonly_source =
+            ReadonlyDirectoryPath::new(source_dir.to_string_lossy().to_string()).unwrap();
         let writable_dest = WritableDirectoryPath::new(dest_dir.to_path_buf()).unwrap();
 
         // ===== Act =====
@@ -172,21 +178,22 @@ mod tests {
     }
 
     #[test]
-    fn writable_directory_path_verify_directory_contents_match_returns_true_for_identical_directories() {
+    fn writable_directory_path_verify_directory_contents_match_returns_true_for_identical_directories(
+    ) {
         // ===== Arrange =====
         let temp_dir = tempfile::tempdir().unwrap();
         let dir1 = temp_dir.path().join("dir1");
         let dir2 = temp_dir.path().join("dir2");
-        
+
         std::fs::create_dir(&dir1).unwrap();
         std::fs::create_dir(&dir2).unwrap();
-        
+
         // 両方のディレクトリに同じファイルを作成
         let test_file1 = dir1.join("test.txt");
         let test_file2 = dir2.join("test.txt");
         std::fs::write(&test_file1, "test content").unwrap();
         std::fs::write(&test_file2, "test content").unwrap();
-        
+
         let writable_dir = WritableDirectoryPath::new(dir1.to_path_buf()).unwrap();
 
         // ===== Act =====
@@ -198,21 +205,22 @@ mod tests {
     }
 
     #[test]
-    fn writable_directory_path_verify_directory_contents_match_returns_false_for_different_directories() {
+    fn writable_directory_path_verify_directory_contents_match_returns_false_for_different_directories(
+    ) {
         // ===== Arrange =====
         let temp_dir = tempfile::tempdir().unwrap();
         let dir1 = temp_dir.path().join("dir1");
         let dir2 = temp_dir.path().join("dir2");
-        
+
         std::fs::create_dir(&dir1).unwrap();
         std::fs::create_dir(&dir2).unwrap();
-        
+
         // 異なるファイルを作成
         let test_file1 = dir1.join("file1.txt");
         let test_file2 = dir2.join("file2.txt");
         std::fs::write(&test_file1, "content1").unwrap();
         std::fs::write(&test_file2, "content2").unwrap();
-        
+
         let writable_dir = WritableDirectoryPath::new(dir1.to_path_buf()).unwrap();
 
         // ===== Act =====
@@ -229,11 +237,11 @@ mod tests {
         let temp_dir = tempfile::tempdir().unwrap();
         let test_dir = temp_dir.path().join("test_dir");
         std::fs::create_dir(&test_dir).unwrap();
-        
+
         // テストファイルを作成
         let test_file = test_dir.join("test.txt");
         std::fs::write(&test_file, "test content").unwrap();
-        
+
         let writable_dir = WritableDirectoryPath::new(test_dir.to_path_buf()).unwrap();
 
         // ===== Act =====
@@ -243,4 +251,4 @@ mod tests {
         assert!(result.is_ok());
         assert!(FileSystem::is_directory_empty(&test_dir).unwrap());
     }
-} 
+}
